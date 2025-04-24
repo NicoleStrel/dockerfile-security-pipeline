@@ -8,6 +8,8 @@ on:
 permissions:
   contents: read
   packages: write
+  checks: write    # Add this permission for status checks
+  pull-requests: write # Add this permission for PR comments/status
 
 jobs:
   build:
