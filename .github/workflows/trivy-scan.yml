@@ -1,0 +1,57 @@
+name: Scan with Trivy
+
+on:
+  workflow_call:
+    inputs:
+      image-name:
+        required: true
+        type: string
+        description: "The image to scan with Trivy"
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  scan:
+    name: Scan with Trivy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      security-events: write # Required for uploading SARIF results
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        
+      # Trivy scan
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ inputs.image-name }}
+          format: 'sarif'
+          exit-code: '0'  # Don't fail on vulnerabilities for demo purpose
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          output: 'trivy-results.sarif'
+          
+      # Upload Trivy scan results to GitHub Security tab
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: 'trivy'
+          
+      - name: Upload Trivy scan results as artifact  
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-results
+          path: trivy-results.sarif 

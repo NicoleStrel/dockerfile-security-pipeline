@@ -1,0 +1,56 @@
+name: Sign and Create Attestations
+
+on:
+  workflow_call:
+    inputs:
+      image-name:
+        required: true
+        type: string
+        description: "The image to sign and attest"
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  sign:
+    name: Sign and Create Attestations
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write  # Required for OIDC signing
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Install Cosign
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.3.0
+
+      # Set up OIDC Identity token for Cosign
+      - name: Set up OIDC Identity token for Cosign
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_ID_TOKEN_REQUEST_URL', process.env.ACTIONS_ID_TOKEN_REQUEST_URL)
+            core.exportVariable('ACTIONS_ID_TOKEN_REQUEST_TOKEN', process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN)
+
+      # Sign the image with Cosign (using keyless signing)
+      - name: Sign the image with keyless Cosign
+        run: |
+          # Extract the first image if multiple are provided
+          IMAGE_TO_SIGN=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
+          # Clean TUF cache
+          rm -rf ~/.sigstore
+          cosign sign --yes $IMAGE_TO_SIGN
+        env:
+          COSIGN_EXPERIMENTAL: 1
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

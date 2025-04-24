@@ -1,0 +1,62 @@
+name: Scan with Docker Scout
+
+on:
+  workflow_call:
+    inputs:
+      image-name:
+        required: true
+        type: string
+        description: "The image to scan with Docker Scout"
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  scan:
+    name: Scan with Docker Scout
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      security-events: write # Required for uploading SARIF results
+      pull-requests: write  # Required for writing comments to PRs
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Scan with Docker Scout
+      - name: Analyze with Docker Scout
+        uses: docker/scout-action@v1
+        with:
+          command: cves
+          image: ${{ inputs.image-name }}
+          only-severities: critical,high
+          sarif-file: docker-scout-results.sarif
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          dockerhub-user: ${{ secrets.DOCKERHUB_USERNAME }}
+          dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
+          
+      # Upload Docker Scout results to GitHub Security tab
+      - name: Upload Docker Scout scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: docker-scout-results.sarif
+          category: 'docker-scout'
+          
+      - name: Upload Docker Scout results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-scout-results
+          path: docker-scout-results.sarif 

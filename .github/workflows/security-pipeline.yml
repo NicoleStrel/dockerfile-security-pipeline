@@ -1,0 +1,43 @@
+name: Container Security Pipeline
+
+on:
+  pull_request:
+    branches: [ main ] # Run pipeline on pull requests to main branch
+
+# Add permissions at workflow level
+permissions:
+  contents: read
+  packages: write
+  checks: write    
+  pull-requests: write 
+  security-events: write 
+  id-token: write
+
+jobs:
+  build:
+    name: Build Container Image
+    uses: ./.github/workflows/build.yml
+    
+  scan-vulnerabilities:
+    name: Scan with Trivy
+    needs: build
+    uses: ./.github/workflows/trivy-scan.yml
+    with:
+      image-name: ${{ needs.build.outputs.image-name }}
+    
+  scan-with-docker-scout:
+    name: Scan with Docker Scout
+    needs: build
+    uses: ./.github/workflows/docker-scout-scan.yml
+    with:
+      image-name: ${{ needs.build.outputs.image-name }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+  sign-and-attest:
+    name: Sign and Create Attestations
+    needs: [build]
+    uses: ./.github/workflows/sign-attest.yml
+    with:
+      image-name: ${{ needs.build.outputs.image-name }} 

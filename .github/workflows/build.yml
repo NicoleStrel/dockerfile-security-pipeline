@@ -1,0 +1,77 @@
+name: Build Container Image
+
+on:
+  workflow_call:
+    outputs:
+      image-name:
+        description: "The full name of the built image with tags"
+        value: ${{ jobs.build.outputs.image-name }}
+      digest:
+        description: "The digest of the built image"
+        value: ${{ jobs.build.outputs.digest }}
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    name: Build Container Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image-name: ${{ steps.extract-first-image.outputs.first_image }}
+      digest: ${{ steps.build.outputs.digest }}
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: image=moby/buildkit:latest
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=long
+            type=ref,event=branch
+            type=ref,event=pr
+            latest
+
+      # Build image with BuildKit (SLSA Build Level 3 compliant)
+      - name: Build image with BuildKit
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./example
+          push: true  # Push in build job
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true # Enable SLSA provenance attestation
+          sbom: true # Generate SBOM attestation during build
+          outputs: |
+            type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            
+      # Extract first image name for downstream workflows
+      - name: Extract first image name
+        id: extract-first-image
+        run: |
+          FIRST_IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
+          echo "first_image=$FIRST_IMAGE" >> $GITHUB_OUTPUT
+          echo "First image to use in downstream workflows: $FIRST_IMAGE" 
