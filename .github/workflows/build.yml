@@ -41,6 +41,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.3.0
+
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -67,19 +70,10 @@ jobs:
           sbom: true # Generate SBOM attestation during build
           outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             
-      # Extract first image name for downstream workflows
+      # Extract first image name
       - name: Extract first image name
         id: extract-first-image
         run: |
           FIRST_IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
           echo "first_image=$FIRST_IMAGE" >> $GITHUB_OUTPUT
-          echo "First image to use in downstream workflows: $FIRST_IMAGE"
-          
-      # Upload SBOM and provenance as artifacts
-      - name: Upload SBOM and provenance as artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: attestation-artifacts
-          path: |
-            sbom-*.spdx.json
-            provenance.json 
+          echo "First image to use in downstream workflows: $FIRST_IMAGE" 

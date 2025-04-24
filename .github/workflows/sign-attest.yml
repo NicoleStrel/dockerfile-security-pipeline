@@ -31,13 +31,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Download the SBOM and provenance artifacts from the build job
-      - name: Download attestation artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: attestation-artifacts
-          path: ./artifacts
-
       # Install Cosign
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.3.0
@@ -63,25 +56,21 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       # Create attestation for buildx-generated SBOM
       - name: Create SBOM attestation
         run: |
-          # Find the SBOM file (it now has a dynamic name)
-          SBOM_FILE=$(find ./artifacts -name "sbom-*.spdx.json" | head -n 1)
-          echo "Using SBOM file: $SBOM_FILE"
-          
-          # Create SBOM attestation using the buildx-generated SBOM
-          cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate $SBOM_FILE
+          cosign download sbom "$IMAGE_TO_SIGN" > sbom.spdx.json
+          cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate sbom.spdx.json
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      # Create provenance attestation using buildx-generated provenance
+      # Create provenance attestation using downloaded provenance
       - name: Create provenance attestation
         run: |
-          # Create provenance attestation from the buildx-generated provenance
-          cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate ./artifacts/provenance.json
+           cosign download attestation "$IMAGE_TO_SIGN" --predicate-type=https://slsa.dev/provenance/v0.2 > provenance.json
+          cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate provenance.json
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
