@@ -7,6 +7,11 @@ on:
         required: true
         type: string
         description: "The image to scan with Docker Scout"
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
 
 env:
   REGISTRY: ghcr.io
@@ -28,7 +33,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           logout: true
 
@@ -41,7 +46,7 @@ jobs:
           only-severities: critical,high
           sarif-file: docker-scout-results.sarif
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          dockerhub-user: ${{ github.actor }}
+          dockerhub-user: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
           
       # Upload Docker Scout results to GitHub Security tab

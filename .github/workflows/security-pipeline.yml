@@ -31,6 +31,9 @@ jobs:
     uses: ./.github/workflows/docker-scout-scan.yml
     with:
       image-name: ${{ needs.build.outputs.image-name }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
     
   sign-and-attest:
     name: Sign and Create Attestations
