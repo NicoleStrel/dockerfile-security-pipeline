@@ -1,0 +1,31 @@
+name: Container Security Pipeline
+
+on:
+  pull_request:
+    branches: [ main ] # Run pipeline on pull requests to main branch
+
+jobs:
+  build:
+    name: Build Container Image
+    uses: ./.github/workflows/jobs/build.yml
+    
+  scan-vulnerabilities:
+    name: Scan for Vulnerabilities
+    needs: build
+    uses: ./.github/workflows/jobs/trivy-scan.yml
+    with:
+      image-name: ${{ needs.build.outputs.image-name }}
+    
+  scan-with-docker-scout:
+    name: Scan with Docker Scout
+    needs: build
+    uses: ./.github/workflows/jobs/docker-scout-scan.yml
+    with:
+      image-name: ${{ needs.build.outputs.image-name }}
+    
+  sign-and-attest:
+    name: Sign and Create Attestations
+    needs: [build]
+    uses: ./.github/workflows/jobs/sign-attest.yml
+    with:
+      image-name: ${{ needs.build.outputs.image-name }} 
