@@ -32,31 +32,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
         
-      # Trivy scan
+      # Trivy CVE scan (Sarif, HTML  outputs)
       - name: Run Trivy vulnerability scanner (HTML output)
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.30.0
         with:
           image-ref: ${{ inputs.image-name }}
-          format: 'table'
+          format: 'html,sarif'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           template: '@/contrib/html.tpl'
-          output: 'trivy-results.html'
-          
-      # Generate SARIF report for GitHub Security tab
-      - name: Run Trivy vulnerability scanner (SARIF output)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ inputs.image-name }}
-          format: 'sarif'
-          exit-code: '1' 
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL'
-          output: 'trivy-results.sarif'
+          output: 'trivy-results.html,trivy-results.sarif'
           
       # Upload Trivy scan results to GitHub Security tab
       - name: Upload Trivy scan results to GitHub Security tab

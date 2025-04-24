@@ -40,7 +40,7 @@ jobs:
       - name: Analyze with Docker Scout
         uses: docker/scout-action@v1
         with:
-          command: cves
+          command: cves,recommendations,compare
           image: ${{ inputs.image-name }}
           only-severities: critical
           exit-on-severity: critical
