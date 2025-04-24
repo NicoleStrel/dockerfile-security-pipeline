@@ -1,4 +1,4 @@
-name: Scan for Vulnerabilities
+name: Scan with Trivy
 
 on:
   workflow_call:
@@ -13,7 +13,7 @@ env:
 
 jobs:
   scan:
-    name: Scan for Vulnerabilities
+    name: Scan with Trivy
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -35,7 +35,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ contains(inputs.image-name, ' ') && split(inputs.image-name, ' ')[0] || inputs.image-name }}
+          image-ref: ${{ inputs.image-name }}
           format: 'sarif'
           exit-code: '0'  # Don't fail on vulnerabilities for demo purpose
           ignore-unfixed: true

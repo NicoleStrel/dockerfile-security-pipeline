@@ -19,7 +19,7 @@ jobs:
     uses: ./.github/workflows/build.yml
     
   scan-vulnerabilities:
-    name: Scan for Vulnerabilities
+    name: Scan with Trivy
     needs: build
     uses: ./.github/workflows/trivy-scan.yml
     with:

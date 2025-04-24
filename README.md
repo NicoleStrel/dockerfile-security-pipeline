@@ -17,7 +17,7 @@ This pipeline implements a comprehensive security approach for container images 
    - Implements SLSA Build Level 3 compliant provenance generation
    - **Security Significance**: Ensures build integrity and provides verifiable build provenance, preventing supply chain attacks
 
-2. **Scan-Trivy-Vulnerabilities Job**:
+2. **Scan-with-Trivy Job**:
    - Runs Trivy vulnerability scanner against the built image
    - Produces SARIF reports integrated with GitHub Security tab
    - Detects OS and library vulnerabilities with critical and high severity

@@ -22,7 +22,7 @@ jobs:
       contents: read
       packages: write
     outputs:
-      image-name: ${{ steps.meta.outputs.tags }}
+      image-name: ${{ steps.extract-first-image.outputs.first_image }}
       digest: ${{ steps.build.outputs.digest }}
       
     steps:
@@ -66,4 +66,12 @@ jobs:
           provenance: true # Enable SLSA provenance attestation
           sbom: true # Generate SBOM attestation during build
           outputs: |
-            type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} 
+            type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            
+      # Extract first image name for downstream workflows
+      - name: Extract first image name
+        id: extract-first-image
+        run: |
+          FIRST_IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
+          echo "first_image=$FIRST_IMAGE" >> $GITHUB_OUTPUT
+          echo "First image to use in downstream workflows: $FIRST_IMAGE" 

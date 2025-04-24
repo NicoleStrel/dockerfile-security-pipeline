@@ -42,7 +42,7 @@ jobs:
         uses: docker/scout-action@v1
         with:
           command: cves
-          image: ${{ contains(inputs.image-name, ' ') && split(inputs.image-name, ' ')[0] || inputs.image-name }}
+          image: ${{ inputs.image-name }}
           only-severities: critical,high
           sarif-file: docker-scout-results.sarif
           github-token: ${{ secrets.GITHUB_TOKEN }}
