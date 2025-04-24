@@ -60,7 +60,7 @@ jobs:
       # Create attestation for buildx-generated SBOM
       - name: Create SBOM attestation
         run: |
-          cosign download sbom "$IMAGE_TO_SIGN" > sbom.spdx.json
+          cosign download sbom "$IMAGE_TO_SIGN" --platform linux/amd64 > sbom.spdx.json
           cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate sbom.spdx.json
         env:
           COSIGN_EXPERIMENTAL: 1
@@ -69,7 +69,7 @@ jobs:
       # Create provenance attestation using downloaded provenance
       - name: Create provenance attestation
         run: |
-          cosign download attestation "$IMAGE_TO_SIGN" --predicate-type=https://slsa.dev/provenance/v0.2 > provenance.json
+          cosign download attestation "$IMAGE_TO_SIGN" --platform linux/amd64 --predicate-type=https://slsa.dev/provenance/v0.2 > provenance.json
           cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate provenance.json
         env:
           COSIGN_EXPERIMENTAL: 1
