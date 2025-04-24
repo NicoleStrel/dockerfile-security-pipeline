@@ -24,6 +24,7 @@ jobs:
       contents: read
       packages: read
       security-events: write # Required for uploading SARIF results
+      pull-requests: write  # Required for writing comments to PRs
       
     steps:
       - name: Checkout repository
