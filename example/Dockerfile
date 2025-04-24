@@ -1,7 +1,7 @@
 # This is a secure Dockerfile using an up-to-date Node.js version
 # For the main branch version
 
-FROM node:20-slim
+FROM node:16
 
 # Create app directory
 WORKDIR /usr/src/app
