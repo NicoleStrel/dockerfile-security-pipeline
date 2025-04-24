@@ -18,7 +18,8 @@ jobs:
     permissions:
       contents: read
       packages: read
-      security-events: write # Required for uploading SARIF results
+      security-events: write # For SARIF results
+      pull-requests: write
       
     steps:
       - name: Checkout repository
@@ -32,15 +33,29 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
         
       # Trivy scan
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (HTML output)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ inputs.image-name }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          template: '@/contrib/html.tpl'
+          output: 'trivy-results.html'
+          
+      # Generate SARIF report for GitHub Security tab
+      - name: Run Trivy vulnerability scanner (SARIF output)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ inputs.image-name }}
           format: 'sarif'
-          exit-code: '0'  # Don't fail on vulnerabilities for demo purpose
+          exit-code: '1' 
           ignore-unfixed: true
           vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
           output: 'trivy-results.sarif'
           
       # Upload Trivy scan results to GitHub Security tab
@@ -49,6 +64,14 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
           category: 'trivy'
+          
+      # Post Trivy scan results as PR comment
+      - name: Post Trivy scan results as PR comment
+        if: github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          filePath: trivy-results.html
+          comment_tag: trivy-scan-results
           
       - name: Upload Trivy scan results as artifact  
         uses: actions/upload-artifact@v4

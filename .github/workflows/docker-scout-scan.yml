@@ -23,8 +23,8 @@ jobs:
     permissions:
       contents: read
       packages: read
-      security-events: write # Required for uploading SARIF results
-      pull-requests: write  # Required for writing comments to PRs
+      security-events: write # For SARIF results
+      pull-requests: write
       
     steps:
       - name: Checkout repository
@@ -42,12 +42,14 @@ jobs:
         with:
           command: cves
           image: ${{ inputs.image-name }}
-          only-severities: critical,high
+          only-severities: critical
+          exit-on-severity: critical
           sarif-file: docker-scout-results.sarif
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dockerhub-user: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
-          
+          write-comment: true
+
       # Upload Docker Scout results to GitHub Security tab
       - name: Upload Docker Scout scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
