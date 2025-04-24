@@ -56,21 +56,21 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+      
       # Create attestation for buildx-generated SBOM
       - name: Create SBOM attestation
         run: |
           # Create SBOM attestation using the buildx-generated SBOM
-          cosign attest --yes --type spdx --predicate-type spdx $IMAGE_TO_SIGN
+          cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate sbom.spdx.json
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+      
       # Create provenance attestation using buildx-generated provenance
       - name: Create provenance attestation
         run: |
           # Create provenance attestation from the buildx-generated provenance
-          cosign attest --yes --type slsaprovenance --predicate-type slsaprovenance $IMAGE_TO_SIGN
+          cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate provenance.json
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
