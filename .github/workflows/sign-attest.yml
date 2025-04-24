@@ -67,8 +67,12 @@ jobs:
       # Create attestation for buildx-generated SBOM
       - name: Create SBOM attestation
         run: |
+          # Find the SBOM file (it now has a dynamic name)
+          SBOM_FILE=$(find ./artifacts -name "sbom-*.spdx.json" | head -n 1)
+          echo "Using SBOM file: $SBOM_FILE"
+          
           # Create SBOM attestation using the buildx-generated SBOM
-          cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate ./artifacts/sbom.spdx.json
+          cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate $SBOM_FILE
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
