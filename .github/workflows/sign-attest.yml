@@ -34,6 +34,8 @@ jobs:
       # Install Cosign
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.1.1
+        with:
+          cosign-release: 'v2.2.2'
 
       # Set up OIDC Identity token for Cosign
       - name: Set up OIDC Identity token for Cosign
@@ -48,10 +50,12 @@ jobs:
         run: |
           # Extract the first image if multiple are provided
           IMAGE_TO_SIGN=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
-          cosign sign --yes $IMAGE_TO_SIGN
+          cosign sign --yes --recursive --tlog-upload=false $IMAGE_TO_SIGN
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COSIGN_FULCIO_URL: "https://fulcio.sigstore.dev"
+          COSIGN_REKOR_URL: "https://rekor.sigstore.dev"
 
       # Verify the built-in SBOM attestation
       - name: Verify SBOM attestation
@@ -60,4 +64,6 @@ jobs:
           IMAGE_TO_VERIFY=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
           cosign verify-attestation --type spdx $IMAGE_TO_VERIFY
         env:
-          COSIGN_EXPERIMENTAL: 1 
+          COSIGN_EXPERIMENTAL: 1
+          COSIGN_FULCIO_URL: "https://fulcio.sigstore.dev"
+          COSIGN_REKOR_URL: "https://rekor.sigstore.dev" 
