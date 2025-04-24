@@ -43,19 +43,6 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL'
           output: 'trivy-results.sarif'
-     
-      # Generate HTML report for PR comment
-      - name: Run Trivy for HTML report
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ inputs.image-name }}
-          format: 'table'
-          exit-code: '0' # Always pass, since this is only for the PR comment
-          ignore-unfixed: true
-          scanners: 'vuln'
-          vuln-type: 'os,library'
-          severity: 'CRITICAL'
-          output: 'trivy-results.html'
           
       # Upload Trivy scan results to GitHub Security tab
       - name: Upload Trivy scan results to GitHub Security tab
@@ -63,14 +50,6 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
           category: 'trivy'
-          
-      # Post Trivy scan results as PR comment
-      - name: Post Trivy scan results as PR comment
-        if: github.event_name == 'pull_request'
-        uses: thollander/actions-comment-pull-request@v3
-        with:
-          file-path: trivy-results.html
-          comment-tag: trivy-scan-results
           
       - name: Upload Trivy scan results as artifact  
         uses: actions/upload-artifact@v4
