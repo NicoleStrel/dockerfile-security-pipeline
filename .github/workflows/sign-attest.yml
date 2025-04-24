@@ -46,9 +46,8 @@ jobs:
       # Extract image name and sign the image with Cosign
       - name: Extract image name and sign
         run: |
-          # Extract the first image if multiple are provided and construct full URI
-          IMAGE_NAME=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
-          IMAGE_TO_SIGN="${{ env.REGISTRY }}/${IMAGE_NAME}"
+          # Extract the first image if multiple are provided
+          IMAGE_TO_SIGN=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
           echo "IMAGE_TO_SIGN=$IMAGE_TO_SIGN" >> $GITHUB_ENV
           
           # Clean TUF cache
