@@ -67,6 +67,8 @@ jobs:
           sbom: true # Generate SBOM attestation during build
           outputs: |
             type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            type=sbom,dest=sbom.spdx.json
+            type=provenance,mode=max,dest=provenance.json
             
       # Extract first image name for downstream workflows
       - name: Extract first image name
@@ -74,4 +76,13 @@ jobs:
         run: |
           FIRST_IMAGE=$(echo "${{ steps.meta.outputs.tags }}" | head -n 1)
           echo "first_image=$FIRST_IMAGE" >> $GITHUB_OUTPUT
-          echo "First image to use in downstream workflows: $FIRST_IMAGE" 
+          echo "First image to use in downstream workflows: $FIRST_IMAGE"
+          
+      # Upload SBOM and provenance as artifacts
+      - name: Upload SBOM and provenance as artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: attestation-artifacts
+          path: |
+            sbom.spdx.json
+            provenance.json 

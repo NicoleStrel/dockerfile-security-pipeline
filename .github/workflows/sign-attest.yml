@@ -31,6 +31,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Download the SBOM and provenance artifacts from the build job
+      - name: Download attestation artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: attestation-artifacts
+          path: ./artifacts
+
       # Install Cosign
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.3.0
@@ -61,7 +68,7 @@ jobs:
       - name: Create SBOM attestation
         run: |
           # Create SBOM attestation using the buildx-generated SBOM
-          cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate sbom.spdx.json
+          cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate ./artifacts/sbom.spdx.json
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,7 +77,7 @@ jobs:
       - name: Create provenance attestation
         run: |
           # Create provenance attestation from the buildx-generated provenance
-          cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate provenance.json
+          cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate ./artifacts/provenance.json
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
