@@ -35,6 +35,14 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.1.1
 
+      # Set up OIDC Identity token for Cosign
+      - name: Set up OIDC Identity token for Cosign
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.exportVariable('ACTIONS_ID_TOKEN_REQUEST_URL', process.env.ACTIONS_ID_TOKEN_REQUEST_URL)
+            core.exportVariable('ACTIONS_ID_TOKEN_REQUEST_TOKEN', process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN)
+
       # Sign the image with Cosign (using keyless signing)
       - name: Sign the image with keyless Cosign
         run: |
@@ -43,6 +51,7 @@ jobs:
           cosign sign --yes $IMAGE_TO_SIGN
         env:
           COSIGN_EXPERIMENTAL: 1
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Verify the built-in SBOM attestation
       - name: Verify SBOM attestation
