@@ -60,6 +60,9 @@ jobs:
         run: |
           # Extract the first image if multiple are provided
           IMAGE_TO_VERIFY=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
-          cosign verify-attestation --type spdx $IMAGE_TO_VERIFY
+          cosign verify-attestation --type spdx \
+            --certificate-identity-regexp="https://github.com/.*" \
+            --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+            $IMAGE_TO_VERIFY
         env:
           COSIGN_EXPERIMENTAL: 1 
