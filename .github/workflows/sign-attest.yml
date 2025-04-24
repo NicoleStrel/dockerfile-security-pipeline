@@ -38,13 +38,17 @@ jobs:
       # Sign the image with Cosign (using keyless signing)
       - name: Sign the image with keyless Cosign
         run: |
-          cosign sign --yes ${{ inputs.image-name }}
+          # Extract the first image if multiple are provided
+          IMAGE_TO_SIGN=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
+          cosign sign --yes $IMAGE_TO_SIGN
         env:
           COSIGN_EXPERIMENTAL: 1
 
       # Verify the built-in SBOM attestation
       - name: Verify SBOM attestation
         run: |
-          cosign verify-attestation --type spdx ${{ inputs.image-name }}
+          # Extract the first image if multiple are provided
+          IMAGE_TO_VERIFY=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
+          cosign verify-attestation --type spdx $IMAGE_TO_VERIFY
         env:
           COSIGN_EXPERIMENTAL: 1 
