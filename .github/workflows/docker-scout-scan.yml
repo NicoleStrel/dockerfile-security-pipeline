@@ -40,10 +40,10 @@ jobs:
       - name: Analyze with Docker Scout
         uses: docker/scout-action@v1
         with:
-          command: cves,recommendations,compare
+          command: cves,recommendations
           image: ${{ inputs.image-name }}
           only-severities: critical
-          exit-on-severity: critical
+          exit-on: critical
           sarif-file: docker-scout-results.sarif
           github-token: ${{ secrets.GITHUB_TOKEN }}
           dockerhub-user: ${{ secrets.DOCKERHUB_USERNAME }}
