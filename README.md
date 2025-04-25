@@ -38,8 +38,27 @@ This pipeline implements a comprehensive security approach for container images 
 
 1. Add this GitHub Actions workflow to your repository
 2. Configure your Dockerfile in the right location
-3. Create a pull request to trigger the pipeline
-4. View security results in the GitHub Security tab and pull request comments
+3. Add `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` to your repo's action secrets.
+4. Create a pull request to trigger the pipeline
+5. View security results in the GitHub Security tab and pull request comments
+
+## Running the Pipeline Locally
+
+You can trigger the pipeline remotely using GitHub CLI, which allows you to run GitHub Actions workflows directly from your terminal:
+
+1. Install GitHub CLI
+2. Authenticate with GitHub
+   ```bash
+   gh auth login
+   ```
+3. Run the pipeline:
+   ```bash
+   # Run the entire pipeline
+   gh workflow run security-pipeline.yml
+   
+   # Monitor the workflow progress
+   gh run list --workflow=security-pipeline.yml
+   ```
 
 ## Vulnerable Example
 
