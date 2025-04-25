@@ -43,14 +43,36 @@ jobs:
             core.exportVariable('ACTIONS_ID_TOKEN_REQUEST_URL', process.env.ACTIONS_ID_TOKEN_REQUEST_URL)
             core.exportVariable('ACTIONS_ID_TOKEN_REQUEST_TOKEN', process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN)
 
-      # Sign the image with Cosign (using keyless signing)
-      - name: Sign the image with keyless Cosign
+      # Extract image name and sign the image with Cosign
+      - name: Extract image name and sign
         run: |
           # Extract the first image if multiple are provided
           IMAGE_TO_SIGN=$(echo "${{ inputs.image-name }}" | awk '{print $1}')
+          echo "IMAGE_TO_SIGN=$IMAGE_TO_SIGN" >> $GITHUB_ENV
+          
           # Clean TUF cache
           rm -rf ~/.sigstore
           cosign sign --yes $IMAGE_TO_SIGN
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # to do: test attestation
+      # # Create attestation for buildx-generated SBOM
+      # - name: Create SBOM attestation
+      #   run: |
+      #     cosign download attestation "$IMAGE_TO_SIGN" --platform linux/amd64 --predicate-type=https://spdx.dev/Document > sbom.att.json
+      #     jq -r '.payload' < sbom.att.json | base64 -d > sbom.spdx.json
+      #     cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate sbom.spdx.json
+      #   env:
+      #     COSIGN_EXPERIMENTAL: 1
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # # Create provenance attestation using downloaded provenance
+      # - name: Create provenance attestation
+      #   run: |
+      #     cosign download attestation "$IMAGE_TO_SIGN" --platform linux/amd64 --predicate-type=https://slsa.dev/provenance/v0.2 > provenance.att.json
+      #     jq -r '.payload' < provenance.att.json | base64 -d > provenance.json
+      #     cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate provenance.json
+      #   env:
+      #     COSIGN_EXPERIMENTAL: 1
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

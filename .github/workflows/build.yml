@@ -55,7 +55,7 @@ jobs:
       # Build image with BuildKit (SLSA Build Level 3 compliant)
       - name: Build image with BuildKit
         id: build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./example
           push: true  # Push in build job
@@ -65,10 +65,9 @@ jobs:
           cache-to: type=gha,mode=max
           provenance: true # Enable SLSA provenance attestation
           sbom: true # Generate SBOM attestation during build
-          outputs: |
-            type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
             
-      # Extract first image name for downstream workflows
+      # Extract first image name
       - name: Extract first image name
         id: extract-first-image
         run: |
