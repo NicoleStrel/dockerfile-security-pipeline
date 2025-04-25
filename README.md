@@ -65,6 +65,8 @@ You can trigger the pipeline remotely using GitHub CLI, which allows you to run 
 
 ## Vulnerable Example
 
+pull request: https://github.com/NicoleStrel/dockerfile-security-pipeline/pull/4 
+
 The repository includes an example pull request with a vulnerable `node:14.17.0` base image to demonstrate the pipeline's effectiveness.
 
 ## License
