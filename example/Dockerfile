@@ -1,7 +1,7 @@
-# This is a secure Dockerfile using an up-to-date Node.js version
-# For the main branch version
+# This is an intentionally vulnerable Dockerfile 
+# Using Node.js 14.17.0 which has multiple CVEs
 
-FROM node:20-slim
+FROM node:14.17.0
 
 # Create app directory
 WORKDIR /usr/src/app
