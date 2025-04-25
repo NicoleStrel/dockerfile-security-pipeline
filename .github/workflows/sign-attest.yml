@@ -56,23 +56,23 @@ jobs:
         env:
           COSIGN_EXPERIMENTAL: 1
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Create attestation for buildx-generated SBOM
-      - name: Create SBOM attestation
-        run: |
-          cosign download attestation "$IMAGE_TO_SIGN" --platform linux/amd64 --predicate-type=https://spdx.dev/Document > sbom.att.json
-          jq -r '.payload' < sbom.att.json | base64 -d > sbom.spdx.json
-          cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate sbom.spdx.json
-        env:
-          COSIGN_EXPERIMENTAL: 1
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # to do: test attestation
+      # # Create attestation for buildx-generated SBOM
+      # - name: Create SBOM attestation
+      #   run: |
+      #     cosign download attestation "$IMAGE_TO_SIGN" --platform linux/amd64 --predicate-type=https://spdx.dev/Document > sbom.att.json
+      #     jq -r '.payload' < sbom.att.json | base64 -d > sbom.spdx.json
+      #     cosign attest --yes --type spdx $IMAGE_TO_SIGN --predicate sbom.spdx.json
+      #   env:
+      #     COSIGN_EXPERIMENTAL: 1
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-      # Create provenance attestation using downloaded provenance
-      - name: Create provenance attestation
-        run: |
-          cosign download attestation "$IMAGE_TO_SIGN" --platform linux/amd64 --predicate-type=https://slsa.dev/provenance/v0.2 > provenance.att.json
-          jq -r '.payload' < provenance.att.json | base64 -d > provenance.json
-          cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate provenance.json
-        env:
-          COSIGN_EXPERIMENTAL: 1
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # # Create provenance attestation using downloaded provenance
+      # - name: Create provenance attestation
+      #   run: |
+      #     cosign download attestation "$IMAGE_TO_SIGN" --platform linux/amd64 --predicate-type=https://slsa.dev/provenance/v0.2 > provenance.att.json
+      #     jq -r '.payload' < provenance.att.json | base64 -d > provenance.json
+      #     cosign attest --yes --type slsaprovenance $IMAGE_TO_SIGN --predicate provenance.json
+      #   env:
+      #     COSIGN_EXPERIMENTAL: 1
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
