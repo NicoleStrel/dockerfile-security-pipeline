@@ -53,8 +53,11 @@ You can trigger the pipeline remotely using GitHub CLI, which allows you to run 
    ```
 3. Run the pipeline:
    ```bash
-   # Run the entire pipeline
+   # Run the entire pipeline (recommended)
    gh workflow run security-pipeline.yml
+   
+   # Run individual workflows
+   gh workflow run build.yml
    
    # Monitor the workflow progress
    gh run list --workflow=security-pipeline.yml
@@ -62,11 +65,7 @@ You can trigger the pipeline remotely using GitHub CLI, which allows you to run 
 
 ## Vulnerable Example
 
-The repository includes an example pull request with a Dockerfile based on `node:16` with vulnerable dependencies to demonstrate the pipeline's effectiveness:
-
-- The base image `node:16` contains known vulnerabilities
-- The `package.json` includes outdated dependencies with known CVEs (lodash 4.17.15)
-- Running the pipeline will detect and report these issues
+The repository includes an example pull request with a vulnerable `node:14.17.0` base image to demonstrate the pipeline's effectiveness.
 
 ## License
 
